@@ -219,7 +219,9 @@ def show_exam_result(request, course_id, submission_id):
     )
 
     choices = submission.choices.all()
-
+    selected_ids = list(
+        submission.choices.values_list('id', flat=True)
+    )
     grade = 0
 
     for question in course.question_set.all():
@@ -242,12 +244,13 @@ def show_exam_result(request, course_id, submission_id):
         'course': course,
         'grade': grade,
         'choices': choices,
+        'selected_ids': selected_ids,
     }
 
     return render(
         request,
         'onlinecourse/exam_result_bootstrap.html',
-        context
+         context
     )
 
 
