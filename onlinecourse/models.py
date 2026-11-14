@@ -100,29 +100,55 @@ class Enrollment(models.Model):
 # One choice could belong to multiple submissions
 #class Submission(models.Model):
 #    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
-#    choices = models.ManyToManyField(Choice)
+#    choices = models.ManyToManyField(Choic
+
 
 # Question model
 class Question(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    content = models.CharField(max_length=200)
+    question_text = models.CharField(max_length=200)
     grade = models.IntegerField(default=50)
 
+    def is_get_score(self, selected_ids):
+        correct_ids = set(
+            self.choice_set.filter(is_correct=True).values_list('id', flat=True)
+        )
+        selected_ids = set(int(choice_id) for choice_id in selected_ids)
+
+        if correct_ids == selected_ids:
+            return self.grade
+        return 0
+
     def __str__(self):
-        return self.content
+        return self.question_text
+
+    @property
+    def content(self):
+        return self.question_text
 
 
 # Choice model
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    content = models.CharField(max_length=200)
+    choice_text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.content
+        return self.choice_text
+
+    @property
+    def content(self):
+        return self.choice_text
 
 
 # Submission model
 class Submission(models.Model):
     enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE)
     choices = models.ManyToManyField(Choice)
+
+    def __str__(self):
+        return (
+            f"Submission by {self.enrollment.user.username} "
+            f"for {self.enrollment.course.name}"
+        )
+
